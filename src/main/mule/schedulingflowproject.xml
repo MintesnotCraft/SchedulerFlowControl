@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4da839bd-3c32-4768-a2c8-be56a14b6db8" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="72e6afc1-605f-4ed8-9aa2-9a54336a2cf7" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" />
+	</db:config>
+	<flow name="schedulingflowprojectFlow" doc:id="7be2b7b7-6a14-4713-a781-80af6eea841a" >
+		<scheduler doc:name="Scheduler" doc:id="bbf2ee89-2067-4282-8676-c1a1834c2aae" >
+			<scheduling-strategy >
+				<cron expression="0 0 0 ? * FRI" timeZone="Africa/Addis_Ababa"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="9b2c843c-537d-4ebc-825c-84c102ef915b" message="Hello this is craft soft"/>
+	</flow>
+	<flow name="schedulingflowprojectFlow5" doc:id="4195f225-519b-4531-ba08-d197fc91a84e" >
+		<http:listener doc:name="Listener" doc:id="636b9f96-5c6e-46bc-b716-512b61949868" config-ref="HTTP_Listener_config" path="/currency"/>
+		<set-variable value="#[attributes.queryParams.country]" doc:name="Set Variable" doc:id="362d6323-a3d5-4641-a85b-27048d51447a" variableName="country"/>
+		<choice doc:name="Choice" doc:id="d9145aa6-c566-4cc0-aad4-cd9d79706073" >
+			<when expression='#[vars.country ~= "Ethiopia"]'>
+				<ee:transform doc:name="Transform Message" doc:id="6a5d2e0d-2c06-4a82-a087-c4c992604170" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Currency": "Birr"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.country ~= "Eritrea"]'>
+				<ee:transform doc:name="Transform Message" doc:id="379a3d68-9a52-43ee-b297-b0a22c04b2b8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Currency": "Nakfa"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.country ~= "US"]'>
+				<ee:transform doc:name="Transform Message" doc:id="dcba6686-5663-48cb-b507-aa9c1b8dc135" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Currency": "Dollar"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.country ~= "China"]'>
+				<ee:transform doc:name="Transform Message" doc:id="e0eac768-37e3-4f00-a926-6289e8d04edb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Currency": "Yuan"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[vars.country ~= "UK"]'>
+				<ee:transform doc:name="Transform Message" doc:id="7ce0212c-36c8-47da-9b86-4965c374058a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Currency": "Pound"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="596793ec-ed71-4427-a67a-343bd412ccaf" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Currency": "I don't know the currency of this country sorry!"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="schedulingflowprojectFlow1" doc:id="48fac902-d039-4e43-9463-3b4c476a1014" >
+		<http:listener doc:name="Listener" doc:id="da5ce068-6c9b-4507-8f01-4abd7ed8c8cd" config-ref="HTTP_Listener_config" path="/choice"/>
+		<db:select doc:name="Select" doc:id="1b4ccc51-c789-4303-a7c7-288ebdf6541e" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from craftb43.students;]]></db:sql>
+		</db:select>
+		<choice doc:name="Choice" doc:id="8961a84a-41da-49ca-a5fe-e5407dcbecf4" >
+			<when expression="#[isEmpty(payload)]">
+				<ee:transform doc:name="Transform Message" doc:id="34b5200c-f8c6-4965-8daa-54cfef53ec18" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Sorry there is no data"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="57a8ed6d-042e-40ad-b5f9-63ecfd28a736">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="schedulingflowprojectFlow2" doc:id="a88ad62b-000e-47d6-8591-7a68b3c7f2de" >
+		<http:listener doc:name="Listener" doc:id="eedecee8-09c0-48c5-9537-f8790421b977" config-ref="HTTP_Listener_config" path="/scatter"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="3249fc37-bd03-4f81-9894-936b1780b4f9" >
+			<route >
+				<db:select doc:name="Select" doc:id="8939e10b-e90d-46ee-aa91-ae17faa58ac1" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT * FROM amazon.shippers;]]></db:sql>
+		</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="3f46e287-d8f5-45b4-bc7b-99729ec9f2a7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<db:select doc:name="Select" doc:id="add9ac2a-d135-4c5c-ba31-a244fb683c13" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT * FROM amazon.orders;]]></db:sql>
+		</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="ec309cf8-6d28-446f-b453-b9a01abb73b6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<db:select doc:name="Select" doc:id="f62f529c-8c1f-48d5-9289-f12b3b4f8afc" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT * FROM amazon.customers;]]></db:sql>
+		</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="69ab34b8-eeec-43ff-9b4c-47367be6820c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="c2f54e95-5a69-43b4-aab2-677ccf4ccafe" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+flatten(payload..payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="schedulingflowprojectFlow3" doc:id="a075437e-cc64-4b03-aa99-fa4ad96191b1" >
+		<http:listener doc:name="Listener" doc:id="4105c667-e7be-46dc-9b59-30665c7766b0" config-ref="HTTP_Listener_config" path="/first"/>
+		<first-successful doc:name="First Successful" doc:id="ce095039-754b-4cb1-81ca-173a2a7ef252" >
+			<route >
+				<db:select doc:name="Select" doc:id="b69b30ef-dde1-4c66-b495-b9645661acce" config-ref="Database_Config">
+					<db:sql ><![CDATA[SELECT * FROM craft.customers;]]></db:sql>
+				</db:select>
+			</route>
+			<route >
+				<db:select doc:name="Select" doc:id="355ac5e3-26e4-4b01-aa2f-b6d7af1cf436" config-ref="Database_Config">
+					<db:sql ><![CDATA[SELECT * FROM craftb43.customers;]]></db:sql>
+				</db:select>
+			</route>
+			<route >
+				<db:select doc:name="Select" doc:id="4ecd3314-d9fe-4835-bae8-902369b5354b" config-ref="Database_Config">
+					<db:sql ><![CDATA[SELECT * FROM craftsoft.customers;]]></db:sql>
+				</db:select>
+			</route>
+		</first-successful>
+		<ee:transform doc:name="Transform Message" doc:id="bc3d5d3e-d2dd-476a-ba24-d709f47ae4a4">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</flow>
+	<flow name="schedulingflowprojectFlow4" doc:id="53ad36b3-ec66-4558-8f18-71781f9c127b" >
+		<scheduler doc:name="Scheduler" doc:id="8cfc91e3-628d-4c43-b207-9f5c1b683ebd" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<round-robin doc:name="Round Robin" doc:id="1c03ea7f-d9cb-434a-9230-1de25cbf605f" >
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="df140d9a-a839-45ed-ac56-3df8190c4278" message="Logger 1" />
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="9e994613-3ba3-4079-acd7-3e694c6ad9d7" message="Logger 2" />
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="1d379802-b4af-499a-a707-fb3d78d6e778" message="Logger 3" />
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="672fd3ba-a9e4-4c8a-9c51-a890fd1c79b7" message="Logger 4" />
+			</route>
+		</round-robin>
+	</flow>
+</mule>
